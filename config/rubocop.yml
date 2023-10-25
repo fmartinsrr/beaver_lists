@@ -1,0 +1,10 @@
+require:
+  - rubocop-rspec
+  - rubocop-rails
+
+AllCops:
+  NewCops: enable
+
+# https://batsov.com/articles/2022/01/20/bad-ruby-hash-value-omission/
+Style/HashSyntax:
+  Enabled: false

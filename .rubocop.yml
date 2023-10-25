@@ -1,0 +1,24 @@
+inherit_from:
+  - config/rubocop.yml
+
+AllCops:
+  SuggestExtensions: false
+  Excludes:
+    - db/schema.rb
+    - bin/bundle
+
+Style/Documentation:
+  Enabled: false
+
+Layout/LineLength:
+  Exclude:
+    - db/schema.rb
+    - config/initializers/devise.rb
+
+Metrics/MethodLength:
+  Exclude:
+    - db/migrate/*.rb
+
+Metrics/BlockLength:
+  Exclude:
+    - config/environments/development.rb
