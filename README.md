@@ -1,5 +1,11 @@
-# Rails Admin + Rails Admin import + Devise
+# Rails Admin + Rails Admin import + Devise + CanCanCan
 
+
+
+- Devise https://github.com/heartcombo/devise
+- Rails Admin https://github.com/railsadminteam/rails_admin
+- Rails Admin Import https://github.com/stephskardal/rails_admin_import
+- CanCanCan https://github.com/CanCanCommunity/cancancan
 
 ## Steps:
 
@@ -93,13 +99,14 @@ $ rails db:create
 
 
 
-### Include `rails_admin` gems into Gemfile. I also include nice to have development gems:
+### Include `rails_admin\'s` and `cancancan` gems into Gemfile. I also include nice to have development gems:
 
 ```
 # ...
 
 gem 'rails_admin'
 gem 'rails_admin_import'
+gem 'cancancan'
 
 # ...
 
