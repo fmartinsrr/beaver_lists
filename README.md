@@ -188,3 +188,126 @@ $ rubocop -A
 
 
 
+### Install rails_admin gem
+
+##### Pre-requisits:
+
+[note we want to take advantage of importmaps]
+
+- importmap gem - Make sure on your `Gemfile` you have the reference `gem 'importmap-rails'`
+- importmap installed - To install into your project run on the terminal `$ bin/rails importmap:install`
+
+
+
+Having the pre-requisite run on terminal:
+
+```
+$ rails g rails_admin:install --asset=importmap
+```
+
+
+
+#### Common issues (Rails 7)
+
+
+
+#### Issue 1 - Missing `rails_admin` files on the `package.json` script
+
+After installing the rails_admin notice the red message on the end:
+
+```
+You need to merge "scripts": {
+  "build:css": "sass ./app/assets/stylesheets/rails_admin.scss:./app/assets/builds/rails_admin.css --no-source-map --load-path=node_modules"
+} into the existing scripts in your package.json.
+Taking 'build:css' as an example, if you're already have application.sass.css for the sass build, the resulting script would look like:
+  sass ./app/assets/stylesheets/application.sass.scss:./app/assets/builds/application.css ./app/assets/stylesheets/rails_admin.scss:./app/assets/builds/rails_admin.css --no-source-map --load-path=node_modules
+```
+
+You need to do what is told to do, you need to make sure all your .scss files are listed on the script of the package.json.
+
+
+
+By default in a clean install it looks like this:
+
+```
+{
+  "dependencies": {
+    "rails_admin": "3.1.2",
+    "sass": "^1.69.5"
+  },
+  "scripts": {
+    "build:css": "sass ./app/assets/stylesheets/application.sass.scss:./app/assets/builds/application.css --no-source-map --load-path=node_modules"
+  }
+}
+
+```
+
+And it NEEDS to be:
+
+````
+{
+  "dependencies": {
+    "rails_admin": "3.1.2",
+    "sass": "^1.69.5"
+  },
+  "scripts": {
+    "build:css": "sass ./app/assets/stylesheets/application.sass.scss:./app/assets/builds/application.css ./app/assets/stylesheets/rails_admin.scss:./app/assets/builds/rails_admin.css --no-source-map --load-path=node_modules"
+  }
+}
+
+````
+
+
+
+##### Issue 2 - Asset `rails_admin.js` was not declared to be precompiled in production.
+
+Error title `Sprockets::Rails::Helper::AssetNotPrecompiledError in RailsAdmin::Main#dashboard`
+
+Error message:
+```
+Showing /Users/.../.rvm/gems/ruby-3.2.2/gems/rails_admin-3.1.2/app/views/layouts/rails_admin/_head.html.erb where line #20 raised:
+
+Asset `rails_admin.js` was not declared to be precompiled in production.
+Declare links to your assets in `app/assets/config/manifest.js`.
+
+  //= link rails_admin.js
+
+and restart your server
+```
+
+Normally this happens when you didn't have importmaps installed, having the importmap gem file you could fix this by just running the command to install it `$ bin/rails importmap:install` 
+
+
+
+But in practice since the rails_admin install script did update the project application.css to application.sass.scss already you just need to make sure the folders of those files are on the manifest.js:
+
+The manifest.js should have the following paths and file types:
+
+```
+//= link_tree ../images
+//= link_tree ../builds
+//= link_tree ../../javascript .js
+//= link_tree ../../../vendor/javascript .js
+
+```
+
+
+
+##### Issue 3 - Missing @fortawesome/fontawesome
+
+
+
+By passing the ` --asset=importmap` to the install command of rails_admin it should have include into the project `config/initializers/assets.rb` the path of the webfonts files of fontawesome into the Rails application assets paths.
+
+tldh: make sure your assets.rb contains:
+
+```
+# ...
+
+Rails.application.config.assets.paths << Rails.root.join("node_modules/@fortawesome/fontawesome-free/webfonts")
+```
+
+
+
+
+
