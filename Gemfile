@@ -90,6 +90,6 @@ end
 gem 'devise', '~> 4.9'
 
 # Authorization
-gem 'cancancan'
+gem 'pundit'
 
 gem "cssbundling-rails"

@@ -6,6 +6,8 @@
 - Rails Admin https://github.com/railsadminteam/rails_admin
 - Rails Admin Import https://github.com/stephskardal/rails_admin_import
 - CanCanCan https://github.com/CanCanCommunity/cancancan
+- Pundit https://github.com/varvet/pundit
+- 
 
 ## Steps:
 
@@ -28,7 +30,7 @@ $ rails generate devise:install
 
 # Create devise auth model
 
-$ rails generate devise User
+$ rails generate devise Admin
 ```
 
 ### Update migration from `\db\migrate\date_devise_create_users.rb` with desired capabilties
@@ -99,14 +101,13 @@ $ rails db:create
 
 
 
-### Include `rails_admin\'s` and `cancancan` gems into Gemfile. I also include nice to have development gems:
+### Include `rails_admin\'s` into Gemfile. I also include nice to have development gems:
 
 ```
 # ...
 
 gem 'rails_admin'
 gem 'rails_admin_import'
-gem 'cancancan'
 
 # ...
 
@@ -306,6 +307,239 @@ tldh: make sure your assets.rb contains:
 
 Rails.application.config.assets.paths << Rails.root.join("node_modules/@fortawesome/fontawesome-free/webfonts")
 ```
+
+
+
+### Ativate Devise on `rails_admin` initializers
+
+Open `config/initializers/rails_admin.rb` and uncomment the Devise section. Now when you open the rails_admin route it should check if user is authenticate before presenting the views.
+
+The file should have:
+```
+RailsAdmin.config do |config|
+	# ...
+	
+  # == Devise ==
+  config.authenticate_with do
+    warden.authenticate! scope: :admin
+  end
+  config.current_user_method(&:current_admin)
+  
+  # ...
+end
+```
+
+
+
+#### Authorization with `Pundit`
+
+Include gem on Gemfile:
+
+```
+gem "pundit"
+```
+
+
+
+Download dependencies
+
+```
+$ bundle install
+```
+
+
+
+Run the install command from Pundit to automatically create the default configuration:
+
+```
+$ rails g pundit:install
+```
+
+
+
+Uncomment the Pundit line from the `.../config/initializers/rails_admin.rb`
+
+```
+# ...
+
+  # == Pundit ==
+  config.authorize_with :pundit
+  
+# ...
+```
+
+
+
+Since we are using a model different than 'user' Pundit will fail to retrieve the current admin logged in failing all the authorizations. To solve this create a new controller for `rails_admin` and override the pundit_user to the correct one.
+
+```
+# .../app/controllers/admin/base_controller.rb
+
+# frozen_string_literal: true
+
+class Admin::BaseController < ApplicationController
+  include Pundit
+  
+  # This will tell pundit which method returns the logged person.
+  def pundit_user
+    current_admin
+  end
+end
+```
+
+
+
+Then get back to the `.../config/initializers/rails_admin.rb` and add the parent_controller:
+
+````
+# .../config/initializers/rails_admin.rb
+
+RailsAdmin.config do |config|
+	# ...
+  config.parent_controller = "Admin::BaseController"
+
+# ...
+````
+
+
+
+A common issue you may get with pundit is the non implemented resolve of the Scode class on `.../app/policies/application_policy.rb`. To solve this you can just return the scope variable of the resolve.
+
+Change this:
+
+```
+class ApplicationPolicy
+
+  # ...
+
+  def resolve
+    raise NotImplementedError, "You must define #resolve in #{self.class}"
+  end
+    
+	# ...
+end
+```
+
+
+
+to this:
+
+```
+class ApplicationPolicy
+
+  # ...
+
+    def resolve
+      scope
+    end
+    
+	# ...
+end
+```
+
+
+
+Then you need to add the rails_admin method to it:
+
+```
+# frozen_string_literal: true
+
+class ApplicationPolicy
+	
+	# ...
+	
+  def dashboard?
+    true
+  end
+
+  def export?
+    true
+  end
+
+  def history?
+    true
+  end
+
+  def show_in_app?
+    true
+  end
+
+end
+```
+
+
+
+
+
+
+
+
+
+--------
+
+Want to answer:
+
+	- how to authenticate rails_admin with different models ?
+	- 
+
+
+
+- Creating a Rails App to upload CSV Using Rails Admin, Admin Import and Devise
+  - https://medium.com/@amanahluwalia/creating-a-rails-app-to-upload-csv-using-rails-admin-admin-import-and-devise-4fb3094d1cb9
+- devise_rails_admin_can_can_can_example
+  - https://github.com/Ovsjah/devise_rails_admin_can_can_can_example
+
+- Pundit with Rails plus User, Admin and Roles Models
+  - https://stackoverflow.com/questions/30204729/pundit-with-rails-plus-user-admin-and-roles-models
+- varvet/pundit
+  - https://github.com/varvet/pundit
+- Using devise for multiple models
+  - https://stackoverflow.com/questions/37145991/using-devise-for-multiple-models
+- How to Setup Multiple Devise User Models
+  - https://github.com/heartcombo/devise/wiki/How-to-Setup-Multiple-Devise-User-Models
+- Different Devise configurations for each model
+  - https://stackoverflow.com/questions/64014687/different-devise-configurations-for-each-model
+- [Devise repo] Configuring multiple models
+  - https://github.com/heartcombo/devise#configuring-multiple-models
+  - https://henrytabima.github.io/rails-setup/docs/devise/configuring-multiple-models
+- railsadminteam/rails_admin - Wiki
+  - https://github.com/railsadminteam/rails_admin/wiki
+- Using RailsAdmin with Pundit
+  - https://medium.com/@therealyifeiwu/using-railsadmin-with-pundit-d2f790841a30
+- How to manage Authorization using Pundit gem on Ruby on Rails
+  - https://medium.com/@sustiono19/how-to-manage-authorization-using-pundit-gem-on-ruby-on-rails-69e119ebb256
+
+
+
+# Articles with good information
+
+- Hotwire
+  - https://hotwired.dev/#screencast
+- thoughtbot signature on open source repositories
+  - https://github.com/thoughtbot/administrate
+  - https://github.com/thoughtbot
+  - https://github.com/thoughtbot/suspenders
+- How to Run a Rails App in Production Locally
+  - https://medium.com/@mshostdrive/how-to-run-a-rails-app-in-production-locally-f29f6556d786
+- How to Migrate a Rails 6 App From sass-rails to cssbundling-rails
+  - https://dev.to/kolide/how-to-migrate-a-rails-6-app-from-sass-rails-to-cssbundling-rails-4l41
+- Rails 7, Bootstrap 5 and importmaps without nodejs
+  - https://dev.to/coorasse/rails-7-bootstrap-5-and-importmaps-without-nodejs-4g8
+- How to use Import Maps in Rails 7 (with examples)
+  - https://eagerworks.com/blog/import-maps-in-rails-7
+- Import Maps Under the Hood in Rails 7
+  - https://blog.appsignal.com/2022/03/02/import-maps-under-the-hood-in-rails-7.html
+
+
+
+# Alternative to rails_admin
+
+- motor-admin https://github.com/motor-admin/motor-admin
+- avo https://github.com/avo-hq/avo
+
+
+
+
 
 
 
