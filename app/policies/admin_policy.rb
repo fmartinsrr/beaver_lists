@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-class UserPolicy < ApplicationPolicy
+class AdminPolicy < ApplicationPolicy
   def index?
-    user.editor? || user.viewer?
+    user.editor?
   end
 
   def show?
-    user.editor? || user.viewer?
+    user.editor?
   end
 
   def edit?

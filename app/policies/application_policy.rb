@@ -17,15 +17,15 @@ class ApplicationPolicy
   end
 
   def create?
-    true
+    user.editor?
   end
 
   def new?
-    create?
+    user.editor?
   end
 
   def update?
-    true
+    user.editor?
   end
 
   def edit?
@@ -33,7 +33,7 @@ class ApplicationPolicy
   end
 
   def destroy?
-    true
+    user.editor?
   end
 
   def scope
@@ -60,11 +60,11 @@ class ApplicationPolicy
   end
 
   def export?
-    true
+    user.editor?
   end
 
   def history?
-    true
+    user.editor? || user.viewer?
   end
 
   def show_in_app?

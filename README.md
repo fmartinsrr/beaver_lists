@@ -1,4 +1,4 @@
-# Rails Admin + Rails Admin import + Devise + CanCanCan
+# Rails Admin + Rails Admin import + Devise + Pundit
 
 
 
@@ -468,6 +468,85 @@ end
 ```
 
 
+
+### Add roles to admin
+Links uteis neste topico:
+https://blog.saeloun.com/2022/01/05/how-to-use-enums-in-rails/
+https://dev.to/collinjilbert/basic-enum-usage-for-defining-roles-or-statuses-on-models-in-rails-3c2f
+
+Create a new migration for the admin model:
+
+```
+$ rails generate migration AddRoleToAdmins role:integer
+```
+* Não consegui entender se é possível definir um valor default no comando.
+
+Now on your Admin model class include:
+
+```
+class Admin < ApplicationRecord
+	# ...
+
+	enum :role, { admin: 0, editor: 1 }
+
+	# ...
+end
+```
+
+### Add Pundit rules
+Links úteis neste topico:
+https://medium.com/@sustiono19/how-to-manage-authorization-using-pundit-gem-on-ruby-on-rails-69e119ebb256
+
+Use the following command to quickly add policies for a model:
+```
+$ rails g pundit:policy admin
+```
+
+And repeat for each model you need. Then update the file according to their actions:
+For example:
+```
+# frozen_string_literal: true
+
+class AdminPolicy < ApplicationPolicy
+  def index?
+    user.admin?
+  end
+
+  def show?
+    user.admin?
+  end
+
+  def edit?
+    user.admin?
+  end
+
+  def create?
+    user.admin?
+  end
+end
+```
+
+#### Rescue from Error:
+
+If you attempt to navigate into some table you don’t have authorisation it will raise an exception.
+To fix this, edit your `app\controllers\admin\base_controller.rb` to have:
+
+```
+class Admin::BaseController < ApplicationController
+	include Pundit
+
+	# ...
+
+	rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+
+	private
+
+	def user_not_authorized
+		flash[:alert] = 'You are not authorized to perform this action.'
+		redirect_to dashboard_path
+	end
+end
+```
 
 
 
