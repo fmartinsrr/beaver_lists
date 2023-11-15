@@ -71,4 +71,8 @@ class ApplicationPolicy
     true
   end
 
+  def import?
+    true
+  end
+
 end

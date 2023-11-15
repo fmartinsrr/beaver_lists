@@ -16,4 +16,8 @@ class AdminPolicy < ApplicationPolicy
   def create?
     user.editor?
   end
+
+  def import? 
+    false 
+  end
 end

@@ -549,6 +549,68 @@ end
 ```
 
 
+### Integrate with rails_admin_import gem
+Links úteis:
+https://github.com/stephskardal/rails_admin_import
+
+Add the gem to your `Gemfile`:
+
+```
+# ...
+
+gem 'rails_admin_import'
+
+# ...
+```
+
+Then edit your `config/initializers/rails_admin.rb` to include `import` on the available actions.
+
+And since in our case we also need to track each document uploaded we will set true to `config.pass_filename` which will make the filename available through `record[:filename_importer]` parameter when importing.
+
+```
+RailsAdmin.config do |config|
+	# ...
+
+	config.actions do
+    	dashboard                     # mandatory
+    	index                         # mandatory
+    	new
+    	export
+    	bulk_delete
+    	show
+    	edit
+    	delete
+    	show_in_app
+    	import # The new field we need
+	end
+
+	config.configure_with(:import) do |config|
+    	config.pass_filename = true # To make the filename available when importing.
+  	end
+end
+```
+
+Then we need to update the Pundit files to have this new reference. I mean on the `application_policy.rb` and all the respective model policy classes.
+```
+class ApplicationPolicy
+	# ...
+
+	def import?
+    	true
+  	end
+end
+```
+
+```
+class AdminPolicy < ApplicationPolicy
+	# ...
+
+	def import? 
+    	false 
+  	end
+end
+```
+
 
 
 
