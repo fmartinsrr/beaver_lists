@@ -611,17 +611,37 @@ class AdminPolicy < ApplicationPolicy
 end
 ```
 
+### Set required fields in rails_admin
+Links úteis:
+https://www.appsloveworld.com/ruby/100/307/assign-value-to-rails-admin-list-field
+
+Go to your `config\initializers\rails_admin.rb` and add the model you need to adjust. example:
+```
+RailsAdmin.config do |config|
+	# ...
+	config.model Freelancer do
+		edit do
+  			field :name do
+          		required true
+        	end
+        	field :email do
+          		required true
+        	end
+        	field :start_date do
+          		required true
+        	end
+        	include_all_fields
+		end
+	end
+end
+```
 
 
+Need table with Leads, Documents, Freelancers, Reports
 
 
 
 --------
-
-Want to answer:
-
-	- how to authenticate rails_admin with different models ?
-	- 
 
 
 

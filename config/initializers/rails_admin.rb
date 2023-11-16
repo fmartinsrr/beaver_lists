@@ -48,4 +48,19 @@ RailsAdmin.config do |config|
     config.pass_filename = true
   end
 
+  config.model Freelancer do
+    edit do
+      field :name do
+        required true
+      end
+      field :email do
+        required true
+      end
+      field :start_date do
+        required true
+      end
+      include_all_fields
+    end
+  end
+
 end
